@@ -8,6 +8,20 @@ end
 REVEAL_REPO = "https://github.com/hakimel/reveal.js"
 PLUGINS_DIR = "_plugins"
 LAYOUTS_DIR = "_layouts"
+CONFIG_FILE = "_config.yml"
+
+REVEAL_CONFIG_COMMENT = "Site-wide configuration for reveal.js presentations. Feel free to edit these if you wish"
+REVEAL_PATH = "/reveal.js/"
+REVEAL_THEME_PATH = "#{REVEAL_PATH}css/theme/"
+REVEAL_THEME = "simple"
+REVEAL_TRANSITION = "convex"
+
+def ensure_target_exists
+  unless File.directory? File.expand_path(@target)
+    puts "#{@target} is not a directory!"
+    exit 1
+  end
+end
 
 def add_reveal_submodule
   Dir.chdir(@target) do
@@ -32,21 +46,28 @@ def copy_reveal_layout
   `cp reveal.html #{@target}/#{LAYOUTS_DIR}/`
 end
 
+def add_reveal_configs
+  # Creates the file if it doesn't already exist (for some reason)
+  File.open("#{@target}/#{CONFIG_FILE}", "a") do |f|
+    f.puts "# #{REVEAL_CONFIG_COMMENT}"
+    f.puts "reveal_path: #{REVEAL_PATH}"
+    f.puts "reveal_theme_path: #{REVEAL_THEME_PATH}"
+    f.puts "reveal_theme: #{REVEAL_THEME}"
+    f.puts "reveal_transition: #{REVEAL_TRANSITION}"
+  end
+end
+
 def install
+  ensure_target_exists
+
   add_reveal_submodule
   create_plugins_dir_if_not_exists
   copy_plugin
   create_layouts_dir_if_not_exists
   copy_reveal_layout
-end
 
-def ensure_target_exists
-  unless File.directory? File.expand_path(@target)
-    puts "#{@target} is not a directory!"
-    exit 1
-  end
+  add_reveal_configs
 end
 
 @target = ARGV.first
-ensure_target_exists
 install
