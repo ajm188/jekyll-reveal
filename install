@@ -1,0 +1,52 @@
+#!/usr/bin/env ruby
+
+if ARGV.empty?
+  puts "Please specify the directory you would like to install this plugin to"
+  exit 1
+end
+
+REVEAL_REPO = "https://github.com/hakimel/reveal.js"
+PLUGINS_DIR = "_plugins"
+LAYOUTS_DIR = "_layouts"
+
+def add_reveal_submodule
+  Dir.chdir(@target) do
+    `git init` # make sure we're in a git repo. this is harmless if it already is a git repo
+    `git submodule add #{REVEAL_REPO}`
+  end
+end
+
+def create_plugins_dir_if_not_exists
+  `mkdir -p #{@target}/#{PLUGINS_DIR}`
+end
+
+def copy_plugin
+  `cp slides.rb #{@target}/#{PLUGINS_DIR}/`
+end
+
+def create_layouts_dir_if_not_exists
+  `mkdir -p #{@target}/#{LAYOUTS_DIR}`
+end
+
+def copy_reveal_layout
+  `cp reveal.html #{@target}/#{LAYOUTS_DIR}/`
+end
+
+def install
+  add_reveal_submodule
+  create_plugins_dir_if_not_exists
+  copy_plugin
+  create_layouts_dir_if_not_exists
+  copy_reveal_layout
+end
+
+def ensure_target_exists
+  unless File.directory? File.expand_path(@target)
+    puts "#{@target} is not a directory!"
+    exit 1
+  end
+end
+
+@target = ARGV.first
+ensure_target_exists
+install
